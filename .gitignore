@@ -1,0 +1,9 @@
+.pio/
+.vscode/
+node_modules/
+.DS_Store
+*.bin
+*.elf
+*.hex
+# Keep the resources folder but ignore massive PDFs if they are strictly local reference
+# resources/*.pdf

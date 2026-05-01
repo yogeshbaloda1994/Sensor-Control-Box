@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated Wiring Guide: CD22, Joystick, Switch & LCD</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 20px auto; padding: 0 20px; }
+        h1, h2 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        .pwr { color: #d9534f; font-weight: bold; } /* Red */
+        .gnd { color: #333; font-weight: bold; }    /* Black */
+        .i2c-sda, .rs485-b { color: #5cb85c; font-weight: bold; } /* Green */
+        .i2c-scl, .rs485-a { color: #f0ad4e; font-weight: bold; } /* Yellow/Orange */
+        .dig { color: #0275d8; font-weight: bold; } /* Blue */
+        .ana { color: #f39c12; font-weight: bold; } /* Orange */
+        .enc { color: #8e44ad; font-weight: bold; } /* Purple */
+        .note { background: #fff3cd; border-left: 5px solid #ffeeba; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        code { background: #eee; padding: 2px 5px; border-radius: 3px; font-family: 'Consolas', monospace; }
+        pre { background: #f8f8f8; border: 1px solid #ddd; padding: 15px; overflow-x: auto; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Integrated Wiring Guide: Arduino Uno R4 WiFi</h1>
+    <p>This document details the remapped connections to accommodate the <strong>RS485 Shield</strong> and <strong>CD22 Laser Sensor</strong> while avoiding pin conflicts.</p>
+
+    <h2>Complete Connection Table</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Arduino Pin</th>
+                <th>Device</th>
+                <th>Function</th>
+                <th>Wire Color / Connection</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="pwr">Vin (12V)</td>
+                <td>CD22 Sensor</td>
+                <td class="pwr">Power (12V)</td>
+                <td class="pwr">Brown</td>
+            </tr>
+            <tr>
+                <td class="pwr">5V</td>
+                <td>Misc</td>
+                <td class="pwr">Logic Power</td>
+                <td class="pwr">Red / VCC</td>
+            </tr>
+            <tr>
+                <td class="gnd">GND</td>
+                <td>All</td>
+                <td class="gnd">Common Ground</td>
+                <td class="gnd">Black / Blue (CD22)</td>
+            </tr>
+            <tr>
+                <td class="ana">A0</td>
+                <td>Joystick</td>
+                <td class="ana">X-Axis</td>
+                <td class="ana">Orange (Analog)</td>
+            </tr>
+            <tr>
+                <td class="ana">A1</td>
+                <td>Joystick</td>
+                <td class="ana">Y-Axis</td>
+                <td class="ana">Orange (Analog)</td>
+            </tr>
+            <tr>
+                <td class="i2c-sda">A4</td>
+                <td>LCD</td>
+                <td class="i2c-sda">SDA (I2C)</td>
+                <td class="i2c-sda">Green</td>
+            </tr>
+            <tr>
+                <td class="i2c-scl">A5</td>
+                <td>LCD</td>
+                <td class="i2c-scl">SCL (I2C)</td>
+                <td class="i2c-scl">Yellow</td>
+            </tr>
+            <tr>
+                <td class="dig">D0 / D1</td>
+                <td>RS485 Shield</td>
+                <td class="dig">HW Serial</td>
+                <td>Used if SW1 is set to "HW"</td>
+            </tr>
+            <tr>
+                <td class="enc">D2</td>
+                <td>Joystick</td>
+                <td class="enc">Encoder A</td>
+                <td class="enc">Purple (2.2k&Omega; Pull-up to 5V)</td>
+            </tr>
+            <tr>
+                <td class="enc">D3</td>
+                <td>Joystick</td>
+                <td class="enc">Encoder B</td>
+                <td class="enc">Purple (2.2k&Omega; Pull-up to 5V)</td>
+            </tr>
+            <tr>
+                <td class="dig">D4</td>
+                <td>Joystick</td>
+                <td class="dig">Pushbutton</td>
+                <td class="dig">Blue (Internal <code>INPUT_PULLUP</code>)</td>
+            </tr>
+            <tr>
+                <td class="dig">D5</td>
+                <td>W48M Switch</td>
+                <td class="dig">Signal</td>
+                <td class="dig">Blue (Wirelead)</td>
+            </tr>
+            <tr>
+                <td class="dig">D6</td>
+                <td>W48M Switch</td>
+                <td class="dig">LED (+)</td>
+                <td class="dig">Blue (via 220&Omega; Resistor)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="note">
+        <strong>Hardware Notes:</strong>
+        <ul>
+            <li><strong>Power:</strong> CD22 is powered by 12V from the <code>Vin</code> pin (supplied by DC Barrel Jack).</li>
+            <li><strong>Serial Configuration:</strong> Set the RS485 Shield <strong>SW1 to "HW"</strong>. This connects the shield to Pins 0 (RX) and 1 (TX), addressed as <code>Serial1</code> on the Uno R4 WiFi.</li>
+            <li><strong>Pull-ups:</strong> Don't forget the 2.2k&Omega; resistors on D2 and D3 for the optical encoder.</li>
+        </ul>
+    </div>
+
+    <h2>Integrated Test Code</h2>
+    <pre><code>
+#include &lt;Wire.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
+
+// Remapped Pins
+const int pinJoyX = A0;
+const int pinJoyY = A1;
+const int pinJoyEnA = 7; // Remapped
+const int pinJoyEnB = 8; // Remapped
+const int pinJoySW = 9;  // Remapped
+const int pinExtSW = 5;
+const int pinExtLED = 6;
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup() {
+  Serial.begin(9600);      // USB Serial for Debugging
+  Serial1.begin(9600);     // Hardware Serial for CD22 (RS485 Shield SW1 set to "HW")
+  
+  pinMode(pinJoySW, INPUT_PULLUP);
+  pinMode(pinExtSW, INPUT_PULLUP);
+  pinMode(pinExtLED, OUTPUT);
+  
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("System Ready");
+}
+
+void loop() {
+  // Read Joystick and Switch
+  int xVal = analogRead(pinJoyX);
+  bool joyBtn = !digitalRead(pinJoySW);
+  bool extBtn = !digitalRead(pinExtSW);
+
+  // Control External LED
+  digitalWrite(pinExtLED, extBtn ? HIGH : LOW);
+
+  // CD22 Serial Pass-through (Debug)
+  if (Serial1.available()) {
+    char c = Serial1.read();
+    Serial.write(c); // Echo to USB
+  }
+
+  // Update LCD
+  lcd.setCursor(0, 0);
+  lcd.print("X:"); lcd.print(xVal);
+  lcd.print(" J:"); lcd.print(joyBtn ? "V" : "X");
+  
+  lcd.setCursor(0, 1);
+  lcd.print("Ext SW: "); lcd.print(extBtn ? "ON " : "OFF");
+  
+  delay(10); // Faster loop for Serial processing
+}
+    </code></pre>
+</body>
+</html>
