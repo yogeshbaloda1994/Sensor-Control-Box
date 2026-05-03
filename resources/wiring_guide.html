@@ -115,6 +115,30 @@
                 <td class="dig">LED (+)</td>
                 <td class="dig">Blue (via 220&Omega; Resistor)</td>
             </tr>
+            <tr>
+                <td class="dig">D10</td>
+                <td>SD Shield</td>
+                <td class="dig">CS (Chip Select)</td>
+                <td>Hardware SS</td>
+            </tr>
+            <tr>
+                <td class="dig">D11</td>
+                <td>SD Shield</td>
+                <td class="dig">MOSI</td>
+                <td>Hardware SPI</td>
+            </tr>
+            <tr>
+                <td class="dig">D12</td>
+                <td>SD Shield</td>
+                <td class="dig">MISO</td>
+                <td>Hardware SPI</td>
+            </tr>
+            <tr>
+                <td class="dig">D13</td>
+                <td>SD Shield</td>
+                <td class="dig">SCK (Clock)</td>
+                <td>Hardware SPI</td>
+            </tr>
         </tbody>
     </table>
 
@@ -127,6 +151,60 @@
         </ul>
     </div>
 
+    <h2>Optimized JST-XH Connector Layout</h2>
+    <p>Connectors should be mounted in the <strong>Prototyping Area</strong> (Centered Group) with JST-XH tabs facing the <strong>Left Edge</strong>.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Component</th>
+                <th>Connector</th>
+                <th>Grid Pos (Col, Row)</th>
+                <th>Pin Mapping (Pin 1 to N)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CD22 Power</td>
+                <td>2-Pin</td>
+                <td>C7-C8, R1</td>
+                <td>1: Vin (12V), 2: GND</td>
+            </tr>
+            <tr>
+                <td>Joy Power</td>
+                <td>2-Pin</td>
+                <td>C9-C10, R1</td>
+                <td>1: 5V, 2: GND</td>
+            </tr>
+            <tr>
+                <td>LCD (I2C)</td>
+                <td>4-Pin</td>
+                <td>C1-C4, R2</td>
+                <td>1: GND, 2: 5V, 3: SDA (A4), 4: SCL (A5)</td>
+            </tr>
+            <tr>
+                <td>Joy Controls</td>
+                <td>5-Pin</td>
+                <td>C1-C5, R4</td>
+                <td>1: A0 (X), 2: A1 (Y), 3: D2 (EncA), 4: D3 (EncB), 5: D4 (Btn)</td>
+            </tr>
+            <tr>
+                <td>W48M Switch</td>
+                <td>4-Pin</td>
+                <td>C6-C9, R7</td>
+                <td>1: GND, 2: 5V, 3: D5 (Signal), 4: D6 (LED+)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="note">
+        <strong>Soldering Strategy:</strong>
+        <ul>
+            <li><strong>Vertical Power Rails:</strong> Run a bare wire down Column 8 for <strong>GND</strong> and Column 10 for <strong>5V</strong>. Tap all connectors into these rails.</li>
+            <li><strong>Joystick Pull-ups:</strong> Mount 2.2k&Omega; resistors directly between the Joy Control pins (3 & 4) and the 5V rail.</li>
+            <li><strong>Cable Exit:</strong> Bundle all JST cables to exit via the left side, keeping the RS485/DB9 ports clear.</li>
+        </ul>
+    </div>
+
     <h2>Integrated Test Code</h2>
     <pre><code>
 #include &lt;Wire.h&gt;
@@ -135,9 +213,9 @@
 // Remapped Pins
 const int pinJoyX = A0;
 const int pinJoyY = A1;
-const int pinJoyEnA = 7; // Remapped
-const int pinJoyEnB = 8; // Remapped
-const int pinJoySW = 9;  // Remapped
+const int pinJoyEnA = 2; 
+const int pinJoyEnB = 3; 
+const int pinJoySW = 4;  
 const int pinExtSW = 5;
 const int pinExtLED = 6;
 

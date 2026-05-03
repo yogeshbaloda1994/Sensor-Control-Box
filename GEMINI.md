@@ -21,3 +21,4 @@
 ## Maintenance
 - **Wiring Guide:** Refer to `resources/wiring_guide.html` for current hardware mapping.
 - **Git:** Use the root `.gitignore` to prevent committing build artifacts.
+- **Workflow:** Do NOT perform git commits or pushes yourself. Always ask the user to perform these actions through VS Code.

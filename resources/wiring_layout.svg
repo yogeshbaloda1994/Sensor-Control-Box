@@ -1,0 +1,56 @@
+<svg width="1010" height="640" xmlns="http://www.w3.org/2000/svg">
+  <!-- Reference Image Background -->
+  <image href="RS485 Description.png" x="0" y="0" width="1010" height="640" opacity="0.5"/>
+
+  <!-- Prototyping Area Highlight (Aligning with the blue grid in the PNG) -->
+  <!-- Grid is roughly Column 1 (Left) to Column 10 (Right) -->
+  <rect x="295" y="160" width="325" height="370" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Optimized Power Rails (Soldered under the shield) -->
+  <!-- GND Rail Col 8 (Vertical) -->
+  <line x1="565" y1="160" x2="565" y2="530" stroke="#000" stroke-width="4" stroke-opacity="0.8"/>
+  <text x="545" y="550" fill="#000" font-family="Arial" font-size="12" font-weight="bold">GND RAIL (Col 8)</text>
+  
+  <!-- 5V Rail Col 10 (Vertical) -->
+  <line x1="605" y1="160" x2="605" y2="530" stroke="#d9534f" stroke-width="4" stroke-opacity="0.8"/>
+  <text x="585" y="150" fill="#d9534f" font-family="Arial" font-size="12" font-weight="bold">5V RAIL (Col 10)</text>
+
+  <!-- JST-XH Connectors (Centered Group) -->
+  <!-- CD22 Power (Row 1, near Vin/GND) -->
+  <g transform="translate(530, 170)">
+    <rect x="0" y="0" width="40" height="20" fill="#eee" stroke="#333"/>
+    <text x="-80" y="15" fill="#000" font-family="Arial" font-size="11" font-weight="bold">CD22 PWR</text>
+  </g>
+
+  <!-- Joystick Power (Row 1, near 5V/GND) -->
+  <g transform="translate(580, 170)">
+    <rect x="0" y="0" width="40" height="20" fill="#eee" stroke="#333"/>
+    <text x="45" y="15" fill="#000" font-family="Arial" font-size="11" font-weight="bold">JOY PWR</text>
+  </g>
+
+  <!-- LCD Connector (Row 2, near A4/A5) -->
+  <g transform="translate(305, 210)">
+    <rect x="0" y="0" width="80" height="20" fill="#eee" stroke="#333"/>
+    <text x="85" y="15" fill="#000" font-family="Arial" font-size="11" font-weight="bold">LCD (I2C)</text>
+  </g>
+
+  <!-- Joystick Controls (Row 4, Centered) -->
+  <g transform="translate(305, 300)">
+    <rect x="0" y="0" width="100" height="20" fill="#eee" stroke="#333"/>
+    <text x="110" y="15" fill="#000" font-family="Arial" font-size="11" font-weight="bold">JOY CTRL (A0-A1, D2-D4)</text>
+  </g>
+
+  <!-- Switch Connector (Row 7, near D5/D6) -->
+  <g transform="translate(480, 480)">
+    <rect x="0" y="0" width="80" height="20" fill="#eee" stroke="#333"/>
+    <text x="-95" y="15" fill="#000" font-family="Arial" font-size="11" font-weight="bold">SWITCH (D5-D6)</text>
+  </g>
+
+  <!-- Overlay Legend -->
+  <rect x="750" y="100" width="230" height="150" fill="#fff" fill-opacity="0.8" stroke="#333"/>
+  <text x="760" y="125" fill="#000" font-family="Arial" font-size="14" font-weight="bold">Wiring Guide Overlay</text>
+  <circle cx="765" cy="145" r="5" fill="#d9534f"/> <text x="780" y="150" fill="#000" font-family="Arial" font-size="12">5V (Red Wire)</text>
+  <circle cx="765" cy="170" r="5" fill="#000"/> <text x="780" y="175" fill="#000" font-family="Arial" font-size="12">GND (Black Wire)</text>
+  <text x="760" y="210" fill="#d9534f" font-family="Arial" font-size="11" font-style="italic">JST Tabs face LEFT (←)</text>
+  <text x="760" y="230" fill="#333" font-family="Arial" font-size="11">Dotted line = Prototyping Area</text>
+</svg>

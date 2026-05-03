@@ -2,22 +2,32 @@
 
 ## Accomplishments
 1.  **Hardware Analysis:** Analyzed datasheets for Grayhill 60A Joystick, ITW Lumex W48M Switch, and CD22 Laser Sensor.
-2.  **Wiring Documentation:** Created a color-coded `resources/wiring_guide.html` detailing all connections to the Arduino Uno R4 WiFi.
-3.  **Conflict Resolution:** Verified that the original `.ino` pin assignments (D2, D3, D4) are compatible with Hardware Serial usage for the RS485 shield.
-4.  **PlatformIO Port:** Successfully ported the `CD22_Logger.ino` to a PlatformIO project (`src/main.cpp`).
-5.  **Build Verified:** The project builds successfully with external dependencies (SdFat, StateMachine, CD22, LiquidCrystal_I2C).
-6.  **Git Setup:** Prepared a `.gitignore` file and provided instructions for syncing with GitHub.
+2.  **Wiring Documentation:** 
+    *   Updated `resources/wiring_guide.html` with color-coded connections and SD shield pins.
+    *   Designed and documented an optimized **JST-XH connector layout** in the prototyping area.
+    *   Generated a visual **SVG wiring overlay** (`resources/wiring_layout.svg`) on the shield's reference image.
+3.  **Firmware Development:**
+    *   Developed a high-speed data logger state machine in `src/main.cpp`.
+    *   Implemented **Interactive User Settings**: Joystick X (Sample Rate) and Y (Duration) with intuitive directional controls (Right/Up to increase).
+    *   Integrated **Debounced Switch (D5)** using `Bounce2` for starting experiments.
+    *   Synchronized **Status LED (D6)**: ON during logging, OFF after CSV conversion.
+4.  **Version Control:** Initialized Git repository and synced with GitHub.
+5.  **Deployment:** Successfully built and uploaded the firmware to the Arduino Uno R4 WiFi on COM3.
 
-## Current Working Pinout (Verified)
-- **Joystick Encoders:** D2, D3 (Requires 2.2kΩ pull-ups)
-- **Joystick Button:** D4
-- **External Switch:** D5
-- **External LED:** D6
-- **I2C LCD:** A4, A5
-- **CD22 Sensor:** Serial1 (Shield SW1: HW)
-- **Power:** 12V via Barrel Jack -> CD22 via Vin.
+## Verified Pin Mapping
+| Component | Pin | Function |
+| :--- | :--- | :--- |
+| **Joystick X** | A0 | Sample Rate (Hz) - Right:+, Left:- |
+| **Joystick Y** | A1 | Duration - Up:+, Down:- |
+| **Joystick EnA**| D2 | Encoder Phase A |
+| **Joystick EnB**| D3 | Encoder Phase B |
+| **Joystick Btn**| D4 | Built-in Button |
+| **Switch** | D5 | Start Experiment (Debounced) |
+| **Switch LED** | D6 | Logging Status Indicator |
+| **LCD SDA/SCL**| A4/A5| 16x2 I2C Display |
+| **SD CS** | D10 | Chip Select |
+| **SD SPI** | D11-13| MOSI, MISO, SCK |
 
 ## Next Steps
-- **Git Push:** Execute the provided git commands to sync with `https://github.com/yogeshbaloda1994/Sensor-Control-Box`.
-- **Hardware Test:** Upload the firmware and verify the CD22 data stream via Serial1.
-- **User Input:** Integrate Joystick/Switch logic into the state machine for menu navigation.
+- **RA4M1 Stack Monitoring:** Implement a stack-checking function compatible with the Renesas RA4M1 chip in `include/FreeStack.h`.
+- **User Feedback:** Refine the CSV conversion display or add real-time data visualization on the LCD.

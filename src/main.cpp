@@ -6,6 +6,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <CD22.h>
+#include <Bounce2.h>
 #include "FreeStack.h"
 #include "SdFat.h"
 
@@ -17,6 +18,12 @@
 bool _DEBUG_ = true;
 #define CD22_BAUD CD22_SERIAL_BAUD_230400
 
+// Pin Definitions based on Wiring Connections.pdf
+const int PIN_JOY_X = A0;
+const int PIN_JOY_Y = A1;
+const int PIN_SWITCH = 5;
+const int PIN_SWITCH_LED = 6;
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Devices Class Instantiation
@@ -24,6 +31,7 @@ bool _DEBUG_ = true;
 StateMachine machine = StateMachine();
 CD22 mySensor;
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
+Bounce debouncer = Bounce();
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,6 +53,17 @@ typedef enum _user_time_period {
   LOGGER_USER_TIME_PERIOD_30_MIN = 1800,
   LOGGER_USER_TIME_PERIOD_1_HOUR = 3600
 } User_Time_Period;
+
+// Helper array for Time Period navigation
+const User_Time_Period TimePeriodOptions[] = {
+  LOGGER_USER_TIME_PERIOD_5_SEC, LOGGER_USER_TIME_PERIOD_10_SEC, LOGGER_USER_TIME_PERIOD_15_SEC, 
+  LOGGER_USER_TIME_PERIOD_30_SEC, LOGGER_USER_TIME_PERIOD_1_MIN, LOGGER_USER_TIME_PERIOD_2_MIN, 
+  LOGGER_USER_TIME_PERIOD_3_MIN, LOGGER_USER_TIME_PERIOD_4_MIN, LOGGER_USER_TIME_PERIOD_5_MIN, 
+  LOGGER_USER_TIME_PERIOD_10_MIN, LOGGER_USER_TIME_PERIOD_15_MIN, LOGGER_USER_TIME_PERIOD_20_MIN, 
+  LOGGER_USER_TIME_PERIOD_30_MIN, LOGGER_USER_TIME_PERIOD_1_HOUR
+};
+const int NumTimePeriodOptions = sizeof(TimePeriodOptions) / sizeof(TimePeriodOptions[0]);
+int CurrentTimePeriodIndex = 4; // Default to 1 MIN
 
 struct data_t {
   int16_t distanceReading;
@@ -70,7 +89,7 @@ bool flag_RateTooFast = false;
 bool flag_SDErrorDisplayed = false;
 
 uint16_t User_SampleRate = 200;  // Hz
-const uint32_t LOG_INTERVAL_USEC = 1000000.0 / User_SampleRate;
+uint32_t LOG_INTERVAL_USEC = 1000000.0 / User_SampleRate;
 User_Time_Period User_TimePeriod = LOGGER_USER_TIME_PERIOD_1_MIN;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -418,6 +437,7 @@ bool logData() {
 
   // Start time for log file.
   uint32_t m = millis();
+  digitalWrite(PIN_SWITCH_LED, HIGH); // Turn LED ON during logging
 
   // Time to log next record.
   uint32_t logTime = micros();
@@ -879,79 +899,85 @@ void State_UnknownError() {
 }
 
 void State_UserSettings() {
+  static unsigned long lastUpdate = 0;
+  static bool initialDisplay = true;
+  
   flag_PostExperimentCheck = false;
-  //User Input
+  flag_UserSettingsSet = false;
 
-  if (_DEBUG_) {
-    Serial.println("\n\nEntering State: UserSettings");
-    Serial.print("Logging Sample Rate is ");
-    Serial.print(String(User_SampleRate));
-    Serial.println("Hz");
-    Serial.print("Logging Time Period is set to: ");
-    Serial.print(String(User_TimePeriod));
-    Serial.println(" Seconds");
+  // Initial Entry Logic
+  if (initialDisplay) {
+    if (_DEBUG_) {
+      Serial.println("\n\nEntering State: UserSettings (Interactive)");
+    }
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("S.Rate: ");
+    lcd.setCursor(14, 0);
+    lcd.print("Hz");
+    lcd.setCursor(0, 1);
+    lcd.print("Time: ");
+    initialDisplay = false;
   }
 
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("S.Time: ");
-  lcd.setCursor(0, 1);
-  lcd.print("Time: ");
-
-  lcd.setCursor(14, 0);
-  lcd.print("Hz");
-
-  lcd.setCursor(10, 0);
-  lcd.print(User_SampleRate);
-
-  lcd.setCursor(10, 1);
-  switch (User_TimePeriod) {
-    case LOGGER_USER_TIME_PERIOD_5_SEC:
-      lcd.print(" 5SEC");
-      break;
-    case LOGGER_USER_TIME_PERIOD_10_SEC:
-      lcd.print("10SEC");
-      break;
-    case LOGGER_USER_TIME_PERIOD_15_SEC:
-      lcd.print("15SEC");
-      break;                
-    case LOGGER_USER_TIME_PERIOD_30_SEC:
-      lcd.print("30SEC");
-      break;
-    case LOGGER_USER_TIME_PERIOD_1_MIN:
-      lcd.print(" 1MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_2_MIN:
-      lcd.print(" 2MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_3_MIN:
-      lcd.print(" 3MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_4_MIN:
-      lcd.print(" 4MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_5_MIN:
-      lcd.print(" 5MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_10_MIN:
-      lcd.print("10MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_15_MIN:
-      lcd.print("15MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_20_MIN:
-      lcd.print("20MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_30_MIN:
-      lcd.print("30MIN");
-      break;
-    case LOGGER_USER_TIME_PERIOD_1_HOUR:
-      lcd.print("1HOUR");
-      break;
+  // Handle Switch Input (Debounced)
+  debouncer.update();
+  if (debouncer.fell()) {
+    if (_DEBUG_) Serial.println("Switch Pressed: Finalizing Settings");
+    LOG_INTERVAL_USEC = 1000000.0 / User_SampleRate; // Update interval
+    flag_UserSettingsSet = true;
+    initialDisplay = true; // Reset for next time
+    return;
   }
 
-  delay(2000);
-  flag_UserSettingsSet = true;  // Replace with actual conditions
+  // Handle Joystick Input (Step Increment)
+  if (millis() - lastUpdate > 200) { // 200ms polling for step increments
+    int xVal = analogRead(PIN_JOY_X);
+    int yVal = analogRead(PIN_JOY_Y);
+
+    // X-Axis: Sample Rate (Thresholds for center-zone 512 +/- 100)
+    if (xVal < 300 && User_SampleRate < 2000) { // Inverted: Push Right increases
+      User_SampleRate += 10;
+    } else if (xVal > 700 && User_SampleRate > 10) { // Inverted: Push Left decreases
+      User_SampleRate -= 10;
+    }
+
+    // Y-Axis: Time Period Index
+    if (yVal < 300 && CurrentTimePeriodIndex < NumTimePeriodOptions - 1) { // Inverted: Push Up increases
+      CurrentTimePeriodIndex++;
+    } else if (yVal > 700 && CurrentTimePeriodIndex > 0) { // Inverted: Push Down decreases
+      CurrentTimePeriodIndex--;
+    }
+    User_TimePeriod = TimePeriodOptions[CurrentTimePeriodIndex];
+
+    // Update Display
+    lcd.setCursor(8, 0);
+    lcd.print("      "); // Clear area
+    lcd.setCursor(8, 0);
+    lcd.print(User_SampleRate);
+
+    lcd.setCursor(6, 1);
+    lcd.print("          "); // Clear area
+    lcd.setCursor(6, 1);
+    switch (User_TimePeriod) {
+      case LOGGER_USER_TIME_PERIOD_5_SEC:  lcd.print("5 SEC"); break;
+      case LOGGER_USER_TIME_PERIOD_10_SEC: lcd.print("10 SEC"); break;
+      case LOGGER_USER_TIME_PERIOD_15_SEC: lcd.print("15 SEC"); break;
+      case LOGGER_USER_TIME_PERIOD_30_SEC: lcd.print("30 SEC"); break;
+      case LOGGER_USER_TIME_PERIOD_1_MIN:  lcd.print("1 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_2_MIN:  lcd.print("2 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_3_MIN:  lcd.print("3 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_4_MIN:  lcd.print("4 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_5_MIN:  lcd.print("5 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_10_MIN: lcd.print("10 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_15_MIN: lcd.print("15 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_20_MIN: lcd.print("20 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_30_MIN: lcd.print("30 MIN"); break;
+      case LOGGER_USER_TIME_PERIOD_1_HOUR: lcd.print("1 HOUR"); break;
+    }
+
+    lastUpdate = millis();
+  }
 }
 
 void State_RecomSettings() {
@@ -1135,6 +1161,7 @@ void State_PostExperiment() {
     lcd.setCursor(0, 0);
     lcd.print("Creating CSV");
     binaryToCsv();
+    digitalWrite(PIN_SWITCH_LED, LOW); // Turn LED OFF when done
     flag_PostExperimentCheck = true;
     delay(2000);
   }
@@ -1256,6 +1283,13 @@ bool IsSDErrorDisplayed(void)
 // Arduino Setup Function
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
+  // Initialize Switch and LED
+  pinMode(PIN_SWITCH, INPUT_PULLUP);
+  pinMode(PIN_SWITCH_LED, OUTPUT);
+  digitalWrite(PIN_SWITCH_LED, LOW);
+  
+  debouncer.attach(PIN_SWITCH);
+  debouncer.interval(25); // 25ms debounce interval
 
   Init->addTransition(&IsInitFinished, SensorDetect);
 
